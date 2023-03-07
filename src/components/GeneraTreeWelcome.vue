@@ -1,0 +1,74 @@
+<template>
+  <form @submit.prevent="onSubmitForm" v-if="formValues.showForm">
+    <!--<button v-on:click="formValues.showForm = !formValues.showForm">Afficher le formulaire</button> -->
+    <div class="row g-3 needs-validation" fileOfEvents>
+      <div class="col-md-9">
+        <label for="dataFilename" class="form-label">Fichier des événements</label>
+        <input type="file" id="dataFilename" ref="dataFilename" @change="onDataFilenameChange" accept=".xlsx" required>
+        <div class="valid-feedback">
+          Ça semble correct!
+        </div>
+      </div>
+
+      <div class="col-md-9">
+        <label for="nameFilename" class="form-label">Fichier des noms et prénoms</label>
+        <input type="file" id="nameFilename" ref="nameFilename" @change="onNameFilenameChange" accept=".xlsx" required>
+        <div class="valid-feedback">
+          Ça semble correct!
+        </div>
+      </div>
+
+      <div class="col-md-9">
+        <label for="cityFilename" class="form-label">Fichier des communes</label>
+        <input type="file" id="cityFilename" ref="cityFilename" @change="onCityFilenameChange" accept=".xlsx" required>
+        <div class="valid-feedback">
+          Ça semble correct!
+        </div>
+      </div>
+
+      <div class="col-md-9">
+        <label for="familyName">Nom de famille à traiter</label>
+        <input type="text" id="familyName" v-model="formValues.familyName">
+      </div>
+
+      <div class="col-12">
+        <button class="btn btn-primary" id="click_button" type="submit"> Commencer </button>
+      </div>
+    </div>
+  </form>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      formValues: {
+        dataFilename: '',
+        nameFilename: '',
+        cityFilename: '',
+        familyName: '',
+        showForm: true,
+        formSubmitted: false
+      }
+    }
+  },
+  methods: {
+    onSubmitForm(event) {
+      event.preventDefault()
+      event.stopPropagation()
+      this.formValues.formSubmitted = true
+      this.formValues.showForm = false      // Cache le formulaire après avoir cliqué sur le bouton
+      console.log(this.formValues)
+    },
+    onDataFilenameChange() {
+      this.formValues.dataFilename = this.$refs.dataFilename.files[0].name;
+    },
+    onNameFilenameChange() {
+      this.formValues.nameFilename = this.$refs.nameFilename.files[0].name;
+    },
+    onCityFilenameChange() {
+      this.formValues.cityFilename = this.$refs.cityFilename.files[0].name;
+    }
+  }
+}
+</script>
