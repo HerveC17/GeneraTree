@@ -37,7 +37,9 @@
 </template>
 
 <script>
-import { loadFiles } from '/Users/hervecaci/GeneaTree/src/Anciens fichier de Genea/loadFiles'
+import { loadFiles } from '/Users/hervecaci/GeneaTree/src/Modules/LoadFiles'
+import { createEmptyNode } from '/Users/hervecaci/GeneaTree/src/Modules/InitializeTree'
+import { theFamilyName, theFamilyNameCapitalized } from '/Users/hervecaci/GeneaTree/src/main.js'
 
 export default {
   data() {
@@ -57,17 +59,26 @@ export default {
       event.preventDefault()
       event.stopPropagation()
       this.formValues.formSubmitted = true
-      this.formValues.showForm = false      // Cache le formulaire après avoir cliqué sur le bouton
+
+      // Récupère le nom recherché et cache le formulaire
+      theFamilyName = this.formValues.familyName.toLowerCase()
+      ftheFamilyNameCapitalized = theFamilyName.charAt(0).toUpperCase() + theFamilyName.slice(1)
+      this.formValues.showForm = false
+      
+      // Charge les fichiers XLSX dans les trois tableaux
       loadFiles(this.formValues.dataFilename, this.formValues.nameFilename,this.formValues.cityFilename)
+      
+      // Crée un arbre généalogique avec deux ancêtres
+      createEmptyNode()                     
     },
     onDataFilenameChange() {
-      this.formValues.dataFilename = this.$refs.dataFilename.files[0];
+      this.formValues.dataFilename = this.$refs.dataFilename.files[0]
     },
     onNameFilenameChange() {
-      this.formValues.nameFilename = this.$refs.nameFilename.files[0];
+      this.formValues.nameFilename = this.$refs.nameFilename.files[0]
     },
     onCityFilenameChange() {
-      this.formValues.cityFilename = this.$refs.cityFilename.files[0];
+      this.formValues.cityFilename = this.$refs.cityFilename.files[0]
     }
   }
 }
