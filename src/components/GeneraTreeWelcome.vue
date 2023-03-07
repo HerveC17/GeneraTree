@@ -9,7 +9,6 @@
           Ça semble correct!
         </div>
       </div>
-
       <div class="col-md-9">
         <label for="nameFilename" class="form-label">Fichier des noms et prénoms</label>
         <input type="file" id="nameFilename" ref="nameFilename" @change="onNameFilenameChange" accept=".xlsx" required>
@@ -17,7 +16,6 @@
           Ça semble correct!
         </div>
       </div>
-
       <div class="col-md-9">
         <label for="cityFilename" class="form-label">Fichier des communes</label>
         <input type="file" id="cityFilename" ref="cityFilename" @change="onCityFilenameChange" accept=".xlsx" required>
@@ -25,20 +23,22 @@
           Ça semble correct!
         </div>
       </div>
-
       <div class="col-md-9">
         <label for="familyName">Nom de famille à traiter</label>
         <input type="text" id="familyName" v-model="formValues.familyName">
       </div>
-
       <div class="col-12">
         <button class="btn btn-primary" id="click_button" type="submit"> Commencer </button>
       </div>
     </div>
   </form>
+  <!-- container to display the json result: to be deleted-->
+  <textarea id="json-result" style="display:none; height: 500px; width:350px"></textarea>
 </template>
 
 <script>
+import { loadFiles } from '/Users/hervecaci/GeneaTree/src/Anciens fichier de Genea/loadFiles'
+
 export default {
   data() {
     return {
@@ -58,16 +58,16 @@ export default {
       event.stopPropagation()
       this.formValues.formSubmitted = true
       this.formValues.showForm = false      // Cache le formulaire après avoir cliqué sur le bouton
-      console.log(this.formValues)
+      loadFiles(this.formValues.dataFilename, this.formValues.nameFilename,this.formValues.cityFilename)
     },
     onDataFilenameChange() {
-      this.formValues.dataFilename = this.$refs.dataFilename.files[0].name;
+      this.formValues.dataFilename = this.$refs.dataFilename.files[0];
     },
     onNameFilenameChange() {
-      this.formValues.nameFilename = this.$refs.nameFilename.files[0].name;
+      this.formValues.nameFilename = this.$refs.nameFilename.files[0];
     },
     onCityFilenameChange() {
-      this.formValues.cityFilename = this.$refs.cityFilename.files[0].name;
+      this.formValues.cityFilename = this.$refs.cityFilename.files[0];
     }
   }
 }

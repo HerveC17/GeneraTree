@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Générateur d'Arbre Généalogique v0.1</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.min.js"></script>
+
+  <link href="Bootstrap 5/css/bootstrap.min.css" rel="stylesheet">
+  <script src="Bootstrap 5/js/bootstrap.bundle.js"></script>
+
+  <!--
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+  -->
+  <script src="CreateEmptyNode"></script>
+  <script src="CreateTempNodeWithSex"></script>
+  <script src="loadFiles"></script>
+  <script src="mapNode"></script>
+  <script src="mapNames"></script>
+  <script src="Place Management Modal Box/Place Management.js"></script>
+  <script type="text/javascript" src="List of countries ISO"></script>
+  <script type="text/javascript" src="List of regions in countries"></script>
+  <!-- <script type="text/javascript" src="List of event codes.js"></script> -->
+  <script src="Name Management Modal Box/name ManagementModalDialog.js"></script>
+  <script src="createMarriageEvent"></script> <!-- Uniquement pour la seconde version de l'objet -->
+  <!--
+    Modal Box for the managemant on unknown given name / family name
+  -->
+  <link href="Name Management Modal Box/Name Management Modal Box.css" rel="stylesheet" type="text/css">
+  <script src="Name Management Modal Box/name ManagementModalDialog.js"></script>
+
+  <!--
+    "modal" ajouté dans la classe le 19 février 2023
+  -->
+  <dialog id="namesDialog" class="modal roundbox boxshadow"
+    style="width: 400px; height: 250px; border: solid 2px black; padding:0">
+    <form method="dialog">
+      <div class="gridheader roundbox-top">
+        Name database management
+      </div>
+      <div class="roundbox-bottom" style="background: #dedadb; width: 400px; height: 223px">
+        <p class="smallAndGrey">
+          This name was not found in my database.
+          You can skip or add this name to my database specifiying
+          whether it is a male/female given name or a family name.
+          If you click on it, you may change a typographical error.
+        </p>
+        <!--- No label beside the editable text -->
+        <!--- innerText will be initialized before showing the modal box-->
+        <input type="text" class="nameFound" id="name"></label>
+        <p class="smalltext" id="fullnameField">
+          The full name field is:
+        </p>
+        <p class="smalltext" id="countryField">
+          The event occured in
+        </p>
+        <div class="namesTypeBlock">
+          <input type="checkbox" name="name" value="First Name" onclick=clickOnGiven() id="givenName">
+          Given name<br>
+          <input type="checkbox" name="name" value="Family Name" onclick=clickOnFamily() id="familyName">
+          Family name<br>
+        </div>
+        <div class="namesRadioBlock">
+          <input type="radio" name="gender" value="Female" id="genderFemale" checked>Female<br>
+          <input type="radio" name="gender" value="Male" id="genderMale">Male<br>
+          <input type="radio" name="gender" value="Unisex" id="genderUnisex">Unisex
+        </div>
+        <div style="text-align: center">
+          <button autofocus type="button" id="nameSkipButton">Skip</button>
+          <button type="button" id="nameAddButton">Add</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="placeDialog" class="roundbox boxshadow"
+    style="width: 400px; height: 200px; border: solid 2px black; padding:0">
+    <form method="dialog">
+      <div class="gridheader roundbox-top">
+        Place database management
+      </div>
+      <div class="roundbox-bottom" style="background: #dedadb; width: 400px; height: 177px">
+        <p id="textInPlaceDialog" class="smallAndGrey">
+          The location where the event occured was not found in my database.
+          You can skip or add this name to my database.
+          If you click on it, you may change a typographical error.
+        </p>
+        <!--- No label beside the editable text -->
+        <!--- innerText will be initialized before showing the modal box-->
+        <datalist id="countryList">
+        </datalist>
+        <input type="text" id="townName" placeholder="Town" style="margin-left: 10px; width: 175px"></label>
+        <input type="text" id="provinceName" placeholder="Province" style="margin-left: 5px; width: 175px"></label>
+        <input type="text" id="regionName" placeholder="Region"
+          style="margin-left: 10px; margin-top: 10px; width: 175px"></label>
+        <input type="search" list="countryList" id="countryName" placeholder="Country"
+          style="margin-left: 5px; width: 185px"></label>
+        <!--
+        <select id="dropMenu" style="margin-left: 5 px; width: 175px" onchange="changeCountryName()">
+        <option value="" selected>--- Select a country ---</option>
+        </select>
+        -->
+        <p class="smalltext" id="fullplaceField">
+          The full place field is:
+        </p>
+        <div style="text-align: center">
+          <button autofocus type="button" id="placeSkipButton">Skip</button>
+          <button type="button" id="placeAddButton">Add</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+</head>
+
+<body>
+  <h1>Générateur d'Arbre Généalogique v0.1</h1>
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <div class="mb-3" position.left=30>
+          <label for="file">Fichier de données</label>
+          <input type="file" id="file_upload" accept=".xlsx" />
+        </div>
+      </div>
+      <div class="col">
+        <div class="mb-3">
+          <label for="file">Fichier de noms</label>
+          <input type="file" id="names_upload" accept=".xlsx" />
+        </div>
+      </div>
+      <div class="col">
+        <div class="mb-3">
+          <label for="file">Fichier des villes</label>
+          <input type="file" id="cities_upload" accept=".xlsx" />
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-10">
+        <div class="mb-10">
+          <label for="text">Nom de famille à traiter</label>
+          <input type="text" id="nameToSearch" value="" /> <!-- Family name to search for -->
+          <button class="btn btn-primary" id="click_button" onclick="launchGenea()"> Commencer </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- container to display the json result: to be deleted-->
+  <textarea id="json-result" style="display:none; height: 500px; width:350px"></textarea>
+
+  <script>
+
+    /*
+    That can't be done in a "good" manner plus I strongly recommend not to go that way.
+    
+    What you describe is a complete blocking, modal window/dialog which is just aweful for web applications. You're already creating the dialog with the modal flag, so a user can't really do anything on your site while the dialog is open, BUT the UI keeps responsive.
+    
+    Again, there is actually no way to "hold" code execution. Any approach in that direction would freeze the UI thread since Javascript and UI updates share the same thread.
+    
+    Since quite a few years, developers pushed Javascript to be more and more non-blocking (Javascript in browsers actually always followed that route, which is very good thing). The idea was reborn with nodeJS on the backend. So, you're swimming upstream here, don't do it.
+    
+    Whatever the problem is you try to solve there, try to think in different way. Think functional, use callbacks and events, think... ECMAscript! :p
+     */
+
+    /******************************
+    **
+    **  La boîte de dialogue au démarrage lance le programme sur un clic en appelant
+    **
+    **    async function launchGenea()                           qui vérifie que les champs sont remplis et appelle
+    **    await loadFiles(files[0], namesFile[0], citiesFile[0]) qui charge les données et appelle
+    **    createEmptyTree()                                      qui crée un arbre DAG vide [creatEmptyNode()] puis appelle
+    **    createTree()                                           qui est la boucle principale 
+    **
+    **    makeTempIndividual(someOne, index): remplit la variable TempIndividual à partir de la ligne Excel
+    **                                        someOne (i.e., mappedData[])
+    **     >  whatTypeOfEvent(someOne): appelé par makeTempIndividual, pour identifier le type d'événement, le lieu et
+    **                                  et la date, pour remplir la variable tempIndividual.anEvent
+    **     >  parsePlaceOriginal(originalPlace): appelé par makeTempIndividual pour identifier le lieu de l'événement et
+    **                                           remplir la variable tempIndividual.anEvent.place
+    **
+    ******************************/
+
+    // *** We define here GLOBAL variables
+
+    let nameManagementDialog = document.getElementById("namesDialog")
+    let placeManagementDialog = document.getElementById("placeDialog")
+    /*
+        var getLocation = function(location) {
+          var geocoder = new google.maps.Geocoder()
+          geocoder.geocode( { 'address': location }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              var latitude = results[0].geometry.location.lat()
+              var longitude = results[0].geometry.location.lng()
+    
+              console.log(latitude, longitude)
+    
+            }
+          })
+        }
+        getLocation('Porto Empedocle')
+        getLocation('Nice')
+        getLocation('New York')
+    */
+    /*
+        const showNameDialogBox = async (firstName, fullname, gender, country) => { // Always returns a promise
+          initNameDialog(firstName, fullname, gender, country)
+          nameManagementDialog.showModal()
+    
+          await new Promise(function (resolve, reject) {
+    
+            // The executor is an anonymous function that is executed automatically after the Promise is constructed
+            // (the two parameters are defined internally in JS, nothing to do here)
+    
+            document.getElementById("nameAddButton").addEventListener("click", function () {
+              addNameToBase()
+              resolve("Added")    // Calls resolve to issue "Added" as a fulfilled value for the Promise
+            })
+    
+            document.getElementById("nameSkipButton").addEventListener("click", function () {
+              resolve("Skipped")  // Calls resolve to issue "Skipped" as a fulfilled value for the Promise
+            })
+          }) // End of new Promise (constructor)
+    
+          nameManagementDialog.close()
+    
+        } // End of showNameDialogBox
+    */
+    // Note: à terme, geneDAG et mappedData pourraient être un seul tableau... ou geneDAG
+    //       se réduirait à un tableau de pointeurs sur mappedData
+
+    var geneDAG = new Array()     // DAG pour représenter l'arbre généalogique
+    const foreFatherIndex = 0
+    const foreMotherIndex = 1
+    var mappedData = new Array()  // Data inputed for XLSX spreadsheet, and expanded
+    var tempIndividual, tempFather, tempMother, tempSpouse, tempStepFather, tempStepMother = ""
+    var namesBase = new Array()   // Liste des prénoms (italiens)
+    var placesArray = new Array()  // Liste des villes (de Sicile pour l'instant)
+    var eventList = new Array()
+    var anEventInTheList = {
+      treeIndex: 0,           // index dans geneDAG pour revenir au noeud si besoin
+      batchNumber: "",        // valeur copiée depuis mappedDATA
+      eventType: "",          // décodé depuis mappedDATA
+      dateOriginal: "",       // valeur copiée depuis mappedDATA
+      exactDate: {            // décodée depuis mappedDATA par la fonction parseDate
+        day: "",
+        month: "",
+        year: ""
+      },
+      place: ""              // valeur copiée depuis mappedDATA
+    }
+
+    var theFamilyName = "";        // La valeur sera récupérée depuis le formulaire par la fonction "Upload"
+    var theFamilyNameCapitalized = "";
+
+    // NB: Codes des évenénements dans le fichier "List of event codes"
+
+    // Sexes dans les différentes langues (Anglais, Français et Italien)
+    //
+    const sexMaleList = ['Male', 'Homme', 'Maschile'];
+    const sexFemaleList = ['Female', 'Femme', 'Femminile'];
+    const sexUNKList = ['Unknown', 'Inconnu', 'Sconosciuto'];
+
+    // Noms des mois de l'année en Français, Anglais et Italien
+    //
+    monthListInitCap = {
+      'language': 'French',
+      'mois': ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Decembre'],
+      //
+      'language': 'English',
+      'mois': ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'],
+      //
+      'language': 'Italian',
+      'mois': ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+        'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre']
+    }
+    frMonthListInitCap = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Decembre']
+    enMonthListInitCap = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December']
+    itMonthListInitCap = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+      'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre']
+
+    var otherEventObject = {  // Returned by function parseOtherEvents(otherEvent)
+      typeOfEvent: "",
+      dateOfEvent: "",
+      placeOfEvent: ""
+    }
+
+    // Codes des événements (https://github.com/jcobban/Genealogy/blob/master/includes/Genealogy/Event.inc)
+    //
+    const evtUndefined = 0;
+    const evtNull = 1;
+    const evtAdoption = 2;
+    const evtBirth = 3;
+    const evtBurial = 4;
+    const evtChristening = 5;
+    const evtDeath = 6;
+    const evtAnnulment = 7;
+    const evtLDSBaptism = 8;   // LDS
+    const evtBarmitzvah = 9;
+    const evtBasmitzvah = 10;
+    const evtBlessing = 11;
+    const evtCensus = 12;
+    const evtCircumcision = 13;
+    const evtCitizenship = 14;
+    const evtConfirmation = 15;
+    const evtLDSConfirmation = 16;   // LDS
+    const evtCourt = 17;
+    const evtCremation = 18;
+    const evtDegree = 19;
+    const evtDivorce = 20;
+    const evtDivorceFiling = 21;
+    const evtEducation = 22;
+    const evtEmigration = 23;
+    const evtEmployment = 24;
+    const evtEngagement = 25;
+    const evtFirstCommunion = 26;
+    const evtGraduation = 27;
+    const evtHobbies = 28;
+    const evtHonours = 29;
+    const evtHospital = 30;
+    const evtIllness = 31;
+    const evtImmigration = 32;
+    const evtInterview = 33;
+    const evtLand = 34;
+    const evtMarriageBanns = 35;
+    const evtMarriageContract = 36;
+    const evtMarriageLicense = 37;
+    const evtMarriageNotice = 38;
+    const evtMarriageSettlement = 39;
+    const evtMedical = 40;
+    const evtMembership = 41;
+    const evtMilitaryService = 42;
+    const evtMission = 43;
+    const evtNameSake = 44;
+    const evtNaturalization = 45;
+    const evtObituary = 46;
+    const evtOccupation = 47;
+    const evtOrdinance = 48;
+    const evtOrdonation = 49;
+    const evtPhysicalDescription = 50;
+    const evtProbate = 51;
+    const evtProperty = 52;
+    const evtReligion = 53;
+    const evtResidence = 54;
+    const evtRetirement = 55;
+    const evtSchool = 56;
+    const evtSocialSecurityNumber = 57;
+    const evtWill = 58;
+    const evtMedicalCondition = 59;
+    const evtMilitary = 60;
+    const evtPhoto = 61;
+    const evtSocSecNum = 62;
+    const evtOccupation1 = 63;
+    const evtNationality = 64;
+    const evtFamilyGroup = 65;
+    const evtEthnicity = 66;
+    const evtFuneral = 67;
+    const evtElection = 68;
+    const evtMarriage = 69;
+    const evtMarriageFact = 70;   // installation defined
+    const evtBirthRegistration = 71;   // added
+    const evtDeathRegistration = 72;   // added
+    const evtMarriageRegistration = 73;   // added
+    const evtLDSEndowed = 74;   // added LDS endowment
+    const evtLDSInitiatory = 75;   // added LDS initiatory
+    const evtLDSSealed = 76;   // added LDS spouse sealing
+    const evtMarriageEnd = 77;   // added
+    const evtLDSParSealed = 78;   // added LDS child sealing
+
+    const unknownEvent = -1,
+      birthEvent = 1,           // birthEvent et ChristeningEvent vont de pair (le second ne pouvant
+      christeningEvent = 2,     // pas être antérieur au premier)
+      residenceEvent = 3,       // Recensement ou résidence
+      immigrationEvent = 4,     // Immigration
+      naturalisationEvent = 5, // Naturalisation
+      marriageEvent = 6,        // Mariage
+      armyEvent = 7,            // Armée
+      successionEvent = 8,      // Succession
+      deathEvent = 9,           // deathEvent et BurialEvent vont de pair (le second ne pouvant
+      burialEvent = 10;         // pas être antérieur au premier)
+
+    const armyEventList = ['MILITARY_SERVICE',
+      'VOTER_REGISTRATION',
+      'DRAFT_REGISTRATION'];
+
+    // Tableau des événements en rapport avec un mariage, tableau des codes correspondants
+    // et tableau des textes correspondants
+    //
+    // Il s'agit de la colonne "otherEvents" dans Excel / mappedData[]
+    //
+    const marriageEventListArray = [
+      { text: 'MARRIAGE_REGISTRATION', code: evtMarriageRegistration, enName: 'Marriage registration', frName: 'Enregistrement du mariage' },
+      { text: 'MARRIAGE_BANNS', code: evtMarriageBanns, enName: 'Marriage banns', frName: 'Bans de mariage' },
+      { text: 'MARRIAGE_CONTRACT', code: evtMarriageContract, enName: 'Marriage contract', frName: 'Contrat de mariage' },
+      { text: 'MARRIAGE_LICENSE', code: evtMarriageLicense, enName: 'Marriage License', frName: 'Certificat de mariage' },
+      { text: 'MARRIAGE_NOTICE', code: evtMarriageNotice, enName: 'Marriage notice', frName: 'Avis de mariage' },
+      { text: 'MARRIAGE_SETTLEMENT', code: evtMarriageSettlement, enName: 'Marriage settlement', frName: 'Contrat de mariage' }]
+
+    const marriageEventList = ['MARRIAGE_REGISTRATION', 'MARRIAGE_BANNS',
+      'MARRIAGE_CONTRACT', 'MARRIAGE_LICENSE',
+      'MARRIAGE_NOTICE', 'MARRIAGE_SETTLEMENT']
+
+    const marriageEventCodes = [evtMarriageRegistration, evtMarriageBanns,
+      evtMarriageContract, evtMarriageLicense,
+      evtMarriageNotice, evtMarriageSettlement]
+
+    const marriageEventEnglishNames = ['Marriage registration', 'Marriage banns',
+      'Marriage contract', 'Marriage License',
+      'Marriage notice', 'Marriage settlement']
+    const marriageEventFrNames = ['Enregistrement du mariage', 'Bans de mariage',
+      'Contrat de mariage', 'Certificat de mariage',
+      'Avis de mariage', 'Contrat de mariage']
+    //
+    const deathEventList = ['OBITUARY']
+
+    // *****
+    // *
+    // * Retourne le type d'événement, la date (éventuellement une plage) et le lieu
+    // * Utilisé pour les otherEvents
+    // *
+    // *****
+
+    function parseOtherEvents(otherEvent) {
+
+      // If there is no event, return unknowEvent
+      //
+      var index1 = otherEvent.indexOf("/");
+      if (index1 == -1) {
+        return { typeOfEvent: unknownEvent, dateOfEvent: "", placeOfEvent: "" };
+      }
+      var otherEventName = otherEvent.slice(0, index1); // This is the name of the event (without "/")
+      //
+      index1++;
+      var index2 = otherEvent.indexOf("//", index1);
+      if (index2 != index1) {              // Extract the date
+        var otherEventDate = otherEvent.slice(index1, index2);
+      }
+      else {
+        var otherEventDate = "UNK"
+      };
+      //
+      var otherEventPlace = otherEvent.slice(index2 + 2);
+      if (otherEventPlace == "") {
+        otherEventPlace = "UNK";
+      }
+      return { 'typeOfEvent': otherEventName, 'dateOfEvent': otherEventDate, 'placeOfEvent': otherEventPlace };
+    }
+    // *****
+    // *
+    // *  Main function called onclick
+    // *
+    // *****
+
+    async function launchGenea() {
+
+      theFamilyName = document.getElementById('nameToSearch').value.toLowerCase();
+      theFamilyNameCapitalized = theFamilyName.charAt(0).toUpperCase() + theFamilyName.slice(1);
+      //
+      var files = document.getElementById('file_upload').files
+      if (files.length == 0) {
+        alert("Please choose any file...")
+        return
+      }
+      var namesFile = document.getElementById('names_upload').files
+      if (namesFile.length == 0) {
+        alert("Please choose a file with names...")
+        return
+      }
+      var citiesFile = document.getElementById('cities_upload').files
+      if (citiesFile.length == 0) {
+        alert("Please choose a file for cities...")
+        return
+      }
+
+      if (theFamilyName == "") {
+        alert("Please enter a family name...")
+        return;
+      }
+
+      await loadFiles(files[0], namesFile[0], citiesFile[0])
+
+      //  Creates forefather and foremother nodes ([Ø] and [1])
+      //  then creates DAGs using mappedData (a global variable)
+      //
+      createEmptyTree()               // Crée un arbre vide (forefather et foremother, couple marié)
+      if (createTree() == -1) {       // Commence à remplir l'arbre
+        Alert("Job aborted at the first line of data...")
+      }
+    }
+
+    // *****
+    // *
+    // *  Sépare le nom de famille et les prénoms   **** Plus compliqué qu'il n'y paraît !!     ****
+    // *                                            **** Fonctionne mais incomplet au 26/8/2022 ****      
+    // *                                            **** Ne peut pas distinguer Nom et Prénom si 1 seul mot!
+    // *****
+
+    function parseFullname(aFullName) {
+      var givenName, surname;
+      var partsArray = [];
+
+      // Si le nom est vide, retourne le nom "UNK" et une liste vide de prénoms
+      //
+      if (aFullName.length == 0) {
+        return { 'sN': "UNK", 'gN': [] };
+      }
+
+      // **** A FAIRE ****
+      // Rechercher tous les prénoms dans la base (tous les mots SAUF le dernier qui
+      // doit être un nom de famille)
+
+      let dummyNameArray = aFullName.split(" ")
+      let k = dummyNameArray.length
+
+      /*
+          S'il n'y a qu'un seul mot, c'est:
+            - soit un prénom qu'on trouve dans la base
+                    - avec sexe conforme -> demander et mettre nom = "UNK" si l'utilisateur confirme le prénom
+                    - avec sexe non-conforme: -> ** Alerter ** (<p>) et demander (si nom de famille)
+            - soit un prénom qu'on ne trouve pas
+                    - parce que c'est un nom de famille -> demander (Modal)
+                    - parce que c'est un prénom inconnu -> demander (Modal)
+      */
+
+      if (k == 1) {
+
+      }
+
+      /*
+          Comment vérifier que [lenght-1] est un nom de famille ? (1) Ce n'est pas un prénom connu...
+
+          Même procédure pour chaque mot (0..N-2) si c'est un prénom connu ou inconnu, en
+          supposant que le dernier mot est un nom de famille (pas double nom...)
+      */
+
+      // S'il n'y a qu'un seul mot (pas de caractère <espace> dans la chaîne), c'est probablement un prénom
+      //
+      var indexName = aFullName.lastIndexOf(" ")
+      if (indexName == -1) {                        // There is only ONE (given?) name in the string
+        partsArray = aFullName.split(' ')
+        notFoundName = aFullName
+        surname = "UNK"
+        const givenNameIndex = namesBase.findIndex(element => element == notFoundName)
+        if (givenNameIndex == -1) {
+
+          console.log("Before showNameDialog");
+          const showNameDialogBox = async (firstName, fullname, gender, country) => { // Always returns a promise
+            console.log("Inside showNameDialog");
+            initNameDialog(firstName, fullname, gender, country)
+            nameManagementDialog.showModal()
+            document.querySelector("body").style.overflow = 'hidden';
+
+            await new Promise(function (resolve, reject) { // If "return", NameDialogBox never closes
+
+              // The executor is an anonymous function that is executed automatically after the Promise is constructed
+              // (the two parameters are defined internally in JS, nothing to do here)
+
+              document.getElementById("nameAddButton").addEventListener("click", function () {
+                addNameToBase()
+                resolve("Added")    // Calls resolve to issue "Added" as a fulfilled value for the Promise
+              })
+
+              document.getElementById("nameSkipButton").addEventListener("click", function () {
+                resolve("Skipped")  // Calls resolve to issue "Skipped" as a fulfilled value for the Promise
+              })
+            }) // End of new Promise (constructor)
+
+            document.getElementById("nameAddButton").removeEventListener("click", function () { })
+            document.getElementById("nameSkipButton").removeEventListener("click", function () { })
+            document.querySelector("body").style.overflow = 'visible';
+            nameManagementDialog.close()
+            console.log("Name Dialog just closed")
+
+          } // End of showNameDialogBox
+
+          console.log("Before (async function () {");
+
+          (async function () {
+            await showNameDialogBox("Zorro", "Cavalier nommé Zorro", "Male", "California, United States");  // Test
+            let nameSelected = document.getElementById("name").value.toLowerCase();
+            nameSelected = nameSelected.charAt(0).toUpperCase() + nameSelected.slice(1);
+            console.log(nameSelected);
+            console.log(namesBase[namesBase.length - 1]);
+          })()
+
+          console.log("After (async function () {")
+          /* async/await"able" DOM event handlers
+
+          async function getMeSomeData() {
+            // ...
+
+            return data
+          }
+
+          document.addEventListener('DOMContentLoaded', async () => {
+            const someContainer = document.getElementById('someContainer');
+            let markup = null;
+
+            try {
+              markup = await getMeSomeData();
+            } catch (e) {
+              markup = 'Something bad happened :(';
+            }
+
+            someContainer.innerHTML = markup;
+          });
+          */
+
+        } // End of (givenNameIndex == -1)
+
+        /*
+        if ((isGiven) && (!isFamilyName)) {
+          return { 'sN': "UNK", 'gN': [giveName] }
+        } else if ((!isGiven) && (isFamilyName)) {
+          return { 'sN': givenName, 'gN': ["UKN"] }
+        } else {
+          if ((!isGiven) && (!isFamilyName)) {
+            return { 'sN': "UNK", 'gN': "UNK" }
+          } else { return { 'sN': givenName, 'gN': giveName } }
+        }
+      } 
+      else { return { 'sN': "UNK", 'gN': partsArray.slice(0, partsArray.length) } }  // Do nothing
+    */
+
+      } // indexName != -1 here
+
+      // Sinon, retourne le dernier mot comme nom et les mots précédents comme prénoms
+      //
+
+      // There are at least two words in the string
+      //
+      partsArray = aFullName.split(' ');
+      givenName = aFullName.substr(0, indexName);
+      surname = aFullName.substr(indexName + 1);
+      return { 'sN': partsArray[partsArray.length - 1], 'gN': partsArray.slice(0, partsArray.length - 1) };
+    }
+
+    // *****
+    // *
+    // *  Parse a non-empty date string
+    // *
+    // *****
+
+    function parseDate(dateString) {
+
+      // Cherche à identifier l'année
+      //
+      var localYear = -1
+      var yearIndex = dateString.lastIndexOf(' ')   // A la fin, il y a toujours l'année
+      if (yearIndex != -1) {
+        localYear = parseInt(dateString.slice(yearIndex, dateString.length), 10) // Base = 10
+        dateString = dateString.slice(0, yearIndex)    // "Jour Mois" ou "Mois"
+      }
+
+      // Cherche à identifier le jour dans la date
+      //
+      var localDay = 0;
+      var monthIndex = String(dateString).indexOf(' ')             // Avant, c'est date du jour
+      if (monthIndex != -1) {
+        localDay = parseInt(dateString.slice(0, monthIndex), 10)    // Base = 10
+        dateString = dateString.slice(monthIndex + 1)  // Il ne reste que le mois (de monthIndex jusqu'à la fin de la chaîne)
+      }
+
+      // Cherche à identifier le mois (case sensitive and language sensitive)
+      // et traduit en anglais pour faciliter les comparaisons ultérieures
+      //
+      var localMonth = dateString.toLowerCase();
+      var monthFlag = false;
+      for (var i = 0; i < 12; i++) {
+        if ((localMonth == frMonthListInitCap[i].toLowerCase())
+          || (localMonth == enMonthListInitCap[i].toLowerCase())) {
+          localMonth = enMonthListInitCap[i];
+          monthFlag = true;
+          break;
+        }
+      }
+
+      return {
+        'theDay': localDay,      // 0 or the day
+        'theMonth': localMonth,  // English month with initial capitalized
+        'theYear': localYear     // NaN or the year };
+      }
+    }
+
+    // *****
+    // *
+    // *  Initialise l'arbre avec uniquement l'ancêtre mâle et son épouse
+    // *
+    // *****
+
+    function createEmptyTree() {
+
+      // Create a first empty node and populate it with defaults characteristics of the forefather
+      //
+      createEmptyNode()
+      geneDAG[foreFatherIndex].name[0].indexInTable = -1
+      geneDAG[foreFatherIndex].name[0].fullName = "Unk " + theFamilyNameCapitalized + " (forefather)"
+      geneDAG[foreFatherIndex].name[0].givenNameArray[0] = "Unk"
+      geneDAG[foreFatherIndex].name[0].surname = theFamilyNameCapitalized + " (forefather)"
+      geneDAG[foreFatherIndex].sex[0].indexInTable = -1
+      geneDAG[foreFatherIndex].sex[0].value = "Male"
+
+      // Create a second empty node and Populate it with defaults characteristics of the foremother
+      //
+      createEmptyNode();
+      geneDAG[foreMotherIndex].name[0].indexInTable = -1
+      geneDAG[foreMotherIndex].name[0].fullName = "Unk Unk (foremother)"
+      geneDAG[foreMotherIndex].name[0].givenNameArray[0] = "Unk"
+      geneDAG[foreMotherIndex].name[0].surname = "Unk (foremother)"
+      geneDAG[foreMotherIndex].sex[0].indexInTable = -1
+      geneDAG[foreMotherIndex].sex[0].value = "Female";
+
+      // Link those two nodes together
+      //
+      geneDAG[foreFatherIndex].toSpouseList[0] = foreMotherIndex
+      geneDAG[foreMotherIndex].toSpouseList[0] = foreFatherIndex
+    }
+
+    // *****
+    // *
+    // *  Crée un arbre généalogique ne comportant que l'ancêtre
+    // *  paternel et l'ancêtre maternel, puis ajoute le premier individu
+    // *  éventuellement son époux/épouse, et rattache éventuellement à foreFather
+    // *  puis appelle la fonction CreateNode pour insérer les individus les uns après
+    // *  les autres.
+    // *
+    // ******
+
+    function createTree() {
+
+      // Crée le premier élément de l'arbre (après forefather et foremother)
+      // dans la variable globale tempIndividual.
+      //
+      // Pour cela, récupère TOUTES les informations disponibles en fonction
+      // du type d'événement, comme par exemple les noms des parents et des beaux-parents pour
+      // un mariage...
+      //
+      if (makeTempIndividual(mappedData[0], 0) == -1) {    // -1 for any error & 0 otherwise
+        return -1
+      }
+
+      const tempIndividualIndex = 0
+      const firstEventCode = tempIndividual.anEvent.eventType
+
+      // ****
+      // **** Traite un événement lié à un mariage qui apparaît dès la première ligne
+      // **** du fichier Excel: on crée 5 nouvelles fiches en plus de l'individu lui-même:
+      // **** son père, sa mère, son époux/épouse, son beau-père et sa belle-mère
+      // ****
+
+      if (marriageEventCodes.find(element => element === firstEventCode) != -1) {
+        createMarriageEvent(tempIndividualIndex)  // Créer cet événement avec marriageLikeDate & marriageLikePlace
+
+        // Seulement quand les tempIndividual, etc. ont été recherchés dans l'arbre déjà constitué...
+        //
+        // Le cas échéant, lier tempFather à foreFather
+        //
+        if ((tempIndividual.anEvent.father.surname == theFamilyNameCapitalized)
+          && (tempIndividual.name.surname == theFamilyNameCapitalized)) {
+
+        }
+
+        if (tempIndividual.anEvent.stepFather.surname == theFamilyNameCapitalized) {
+
+        }
+
+      } // *** End of marriage event
+
+      if (tempIndividual.name.surname === theFamilyNameCapitalized) {
+
+        // If the person's name is identical to the searched name, then his/her father has the same
+        // name and is temporarily foreFather's son (and foreMother's son)
+
+        tempIndividual.anEvent.father.surname = theFamilyNameCapitalized
+        // tempFather.fatherList[0] = foreFatherIndex
+        // tempFather.motherList[0] = foreMotherIndex
+      }
+
+      /*
+      geneDAG[tempIndividualIndex].name.fullName = searchPerson.name.fullName;
+
+      // A FAIRE: Décomposer les prénoms et le nom de l'époux !!
+
+      geneDAG[tempIndividualIndex].sex = searchPerson.sex;
+      //
+      // S'il y a un époux/épouse, il faut créer un noeud
+      //
+      if (searchedPerson.spouse.fullName != "") {
+        createEmptyNode();
+        const spouseIndex = geneDAG.length;
+        geneDAG[tempIndividualIndex].spouse.fullName = searchedPerson.spouse.fullName;
+
+        // A FAIRE: Décomposer les prénoms et le nom de l'époux !!
+
+        geneDAG[spouseIndex].spouse.fullName = searchedPerson.name.fullName;
+
+        // A FAIRE: Décomposer les prénoms et le nom de l'épouse !!
+
+        geneDAG[tempIndividualIndex].spouseList.push(spouseIndex);
+        geneDAG[spouseIndex].spouseList.push(tempIndividualIndex);
+
+        // L'époux/épouse porte-t-il/elle le même patronyme que theFamilyName, si oui il faut
+        // le/la rattacher à foreFather et foreMother
+        //
+
+      }
+
+      // S'il y a un père
+      //    mais s'il n'y a pas de père et que l'individu a le même nom que le nom recherché, il faut le lier à foreFather
+      //
+      if (searchPerson.father.fullname == "") {
+        if (aPerson.name.surname.toLowerCase() == theFamilyName.toLowerCase()) {
+          geneDAG[tempIndividualIndex].father.fullName = geneDAG[foreFatherIndex].name.fullName;
+          geneDAG[foreFatherIndex].childList.push(tempIndividualIndex);
+          geneDAG[tempIndividualIndex].mother.fullName = geneDAG[foreMotherIndex].name.fullName;
+          geneDAG[foreMotherIndex].childList.push(tempIndividualIndex);
+          geneDAG[tempIndividualIndex].fatherList.push(foreFatherIndex);
+          geneDAG[tempIndividualIndex].motherList.push(foreMotherIndex);
+        }
+      } else {
+
+        // L'individu a un père et/ou une mère 
+        geneDAG[tempIndividualIndex].aPerso.father.fullName = searchedPerson.father.fullName;
+        geneDAG[tempIndividualIndex].mother.fullName = searchedPerson.mother.fullname;
+      }
+
+      createEmptyNode();
+      const indexFather = geneDAG.length;
+      //
+      // S'il y a une mère
+      //
+      createEmptyNode();
+      const indexMother = geneDAG.length;
+      //
+      // S'il y a un époux/épouse...
+      //
+      createEmptyNode();
+      const indexSpouse = geneDAG.length;
+      //
+      geneDAG[indexPerson].fatherList.push(indexFather);
+      geneDAG[indexPerson].motherList.push(indexMother);
+      //
+      geneDAG[indexFather].name.fullName = searchPerson.father.fullName;
+      geneDAG[indexFather].sex = "Male";
+      //
+      geneDAG[indexMother].name.fullName = searchPerson.mother.fullName;
+      geneDAG[indexMother].sex = "Female";
+      /*
+            // Boucle de construction du DAG, pour chaque élément du tableau Excel en commençant
+            // par la deuxième ligne !
+            //
+            for (const element of mappedData) {
+              makeTempIndividual(element);  // Ajoute potentiellement jusqu'4 personnes à geneDAG[]
+            };
+
+    */
+
+    }
+
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // >>>>
+    // >>>> Tout ce qui est en dessous de cette ligne doit être considéré comme du brouillon <<<<<
+    // >>>>
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    // *****
+    // *
+    // * Retourne le type d'événement le plus probable      --> **** A TERMINER (22/08/2022) ****
+    // *
+    // *****
+
+    // ** ATTENTION! dateOriginal n'est pas recopiée car dépend du type d'événément
+
+    function whatTypeOfEvent(anIndividual) {  // anIndividual is a mappedData[] object
+      let eventDay, eventMonth, eventYear = 0
+      var theEvent = unknownEvent;
+      otherEventObject = {    // Reset to an empty variable for security since its a global variable
+        typeOfEvent: "",
+        dateOfEvent: "",
+        placeOfEvent: "",
+      }
+
+      if (anIndividual.batchNumber != "") {
+        switch (anIndividual.batchNumber.charAt(0).toUpperCase()) {
+          case 'C':
+            theEvent = evtChristening
+            // Extraire la date du baptême (DB) et la date de naissance (DN)
+            //    - si DB est vide mais DN n'est pas vide: remplacer DB par "UNK"
+            //    - si DN n'est pas vide mais DN est vide: remplacer DB par "UNK"
+            //    - si DB<DN: signaler une erreur
+            break
+          case 'M':
+            theEvent = evtMarriage
+              //    - nom du père
+              //    - nom de la mère
+              //    - nom de l'époux/épouse
+              //    - nom des parents de l'époux/épouse (otherFullNames)
+              ({
+                'theDay': eventDay,
+                'theMonth': eventMonth,
+                'theYear': eventYear
+              } = parseDate(anIndividual.anEvent.marriage.dateOriginal)) // "marriageLikeDate" dans Excel
+            return {
+              'event': theEvent,
+              'dateOriginal': anIndividual.anEvent.marriage.dateOriginal,
+              'theDay': eventDay,
+              'theMonth': eventMonth,
+              'theYear': eventYear,
+              'thePlace': anIndividual.anEvent.marriage.placeText
+            }
+            break
+          case 'B':
+            theEvent = evtBurial;
+            break
+        }
+        if (theEvent != unknownEvent) {   // ***** A CORRIGER ******
+          return {
+            'event': theEvent,
+            'record': anIndividual        // *** Extraire les 3 composantes de la date et la retourner
+          };
+        }
+      }
+
+      // The type of event could not be identified by the initial of batchNumber
+      // so, check whether the "otherEvents" field is not empty
+      //
+      if (anIndividual.otherEvent.otherEventOriginal != "") {
+
+        // Parse the "otherEvents field" into the otherEventObject which is a global variable
+        //
+        otherEventObject = parseOtherEvents(anIndividual.otherEvent.otherEventOriginal);
+
+        // Autre événement se rapportant à un mariage ?
+        //
+        let eventIndex = marriageEventListArray.findIndex(object => {
+          return object.text === otherEventObject.typeOfEvent
+        })
+        if (eventIndex != -1) {
+          anIndividual.marriage.dateOriginal = otherEventObject.dateOfEvent
+          anIndividual.marriage.placeText = otherEventObject.placeOfEvent;
+          ({
+            'theDay': eventDay,
+            'theMonth': eventMonth,
+            'theYear': eventYear,
+          } = parseDate(anIndividual.marriage.dateOriginal))
+        } // marriage.exactDateFormal
+        return {
+          'event': marriageEventListArray[eventIndex].code,
+          'dateOriginal': anIndividual.marriage.originalDate,
+          'theDay': eventDay,
+          'theMonth': eventMonth,
+          'theYear': eventYear,
+          'thePlace': otherEventObject.placeOfEvent
+        }
+      }
+      // Si l'événement n'a pas été déterminé par le batchNumber et s'il n'y
+      // a pas d'événement lié à un mariage, assume qu'il s'agit d'un mariage
+      // si une date est présente.
+      //
+      if (anIndividual.marriageLikeDate != "") {    // ***** Date et lieu ?
+        return {
+          'event': marriageEvent,
+          'record': anIndividual  // **** A COMPLETER car ce n'est pas ce qui est attendu par l'appelant
+        }
+      }
+      //  Decode the type of other event to populate the anIndividual object
+      //
+      if (armyEventList.includes(otherEventObject.typeOfEvent)) {
+        theEvent = armyEvent;
+        anIndividual.otherEvent.date = otherEventObject.dateOfEvent;    // NON! AnIndividual est local...
+        anIndividual.otherEvent.place = otherEventObject.placeOfEvent;  // NON! AnIndividual est local...
+      }
+
+      //
+      if (deathEventList.includes(otherEventObject.typeOfEvent)) {
+        anIndividual.deathLikeDate = otherEventObject.dateOfEvent;       // NON! AnIndividual est local...
+        anIndividual.deathLikePlaceText = otherEventObject.placeOfEvent; // NON! AnIndividual est local...
+        return {
+          'event': theEvent,
+          'record': anIndividual
+        };
+      }
+      return {
+        'event': theEvent,
+        'record': anIndividual
+      }
+
+      // The type of event could not be identified by the initial of batchNumber
+      // and the "otherEvents" field is empty, so try to figure out using ...LikeDate fields
+      // 
+
+      //
+      if (anIndividual.deathLikeDate != "") {
+        return {
+          'event': deathEvent,
+          'record': anIndividual
+        };
+      }
+      if (anIndividual.burialDate != "") {
+        return {
+          'event': burialEvent,
+          'record': anIndividual
+        }
+      }
+
+      //    - Ici, il reste residenceEvent       (Recensement ou résidence)   
+      //                    immigrationEvent     (Immigration)
+      //                    naturalisationEnvent (Naturalisation)
+      //                    successionEvent      (Succession)
+
+      return {
+        'event': unknownEvent,
+        'record': anIndividual
+      };
+    }
+
+    // *****
+    // *
+    // *  searchDAG: Cherche dans l'arbre 'geneDAG' les parents, l'époux/épouse
+    // *             et l'individu. On fait le pari que si un individu a été
+    // *             inséré dans l'arbre, ses deux parents voire son époux/épouse
+    // *             l'ont été.
+    // *
+    // *****
+
+    // Si un noeud a été créé à partir de la naissance/baptême, il n'y a pas de nom d'époux/épouse
+    // et il est possible que deux enfants du même couple ait eu le même prénom!
+
+    function searchDAG(searchedPerson) {  // On passe un paramètre de type tempIndividual
+
+      // Créé une liste de visite et initialise à "false" pour chaque élément de l'arbre
+      //
+      visitedBool = new Array(geneDAG.length);
+      visitedBool.forEach(function (element, index, array) {
+        visitedBool[index] = false;
+      });
+
+      // Parcours en profondeur de l'arbre... depuis le fils de foreFather (index==2)
+      //
+      DFSUtil(2, visitedBool);
+      return { hasFound: false, hasIndex: -1 };
+    }
+
+    // *****
+    // *
+    // * Fonction récursive pour visiter l'arbre en "Depth First Traversal"
+    // * et comparer les noms du père et de la mère
+    // *
+    // *****
+
+    function DFSUtil(v, visited) {
+      visited[v] = true;  // Ce noeud a été visité
+      console.log("Noeud visité: ", v);
+
+    }
+
+    // *****
+    //
+    //   Cherche si un mot est un pays connu. Si oui, retourne le nom du pays
+    //   en anglais, et sinon retourne une chaîne vide
+    //
+    // ******
+
+    function isItACountry(country) {
+      let countryIndex = -1
+      for (let i = 0; i < arrayOfCountries.length; i++) {
+        countryIndex = arrayOfCountries[i].names.indexOf(country)
+        if (countryIndex != - 1) {
+          return arrayOfCountries[i].names[0]
+        }
+      }
+      return ""
+    }
+    // *****
+    //
+    //    Cherche si un mot est une région connue. Si oui, retourne le nom du pays et de
+    //    la région en anglais et sinon retourne un objet vide
+    //
+    // *****
+
+    function isItARegion(region) {
+      let regionIndex = -1
+      for (let i = 0; i < regionsInCountries.length; i++) {
+        regionIndex = regionsInCountries[i].regions.indexOf(region)
+        if (regionIndex != -1) {
+          return { 'retrievedRegion': region, 'retrievedCountry': regionsInCountries[i].country }
+        }
+      }
+      return { 'retrievedRegion': "", 'retrievedCountry': "" }
+    }
+
+    // *****
+    // **
+    // **  Parse the placeText field to separate town, region and country
+    // **
+    // *****
+
+    // Format:  - City + ", "   --> Stoke on Trent / Agrigento / Campobello di Licata
+    //          - County ", "   --> Staffordshire / Clark (comté) / Agrigento
+    //          - Region ", "   --> Angleterre / Sicile
+    //          - Country       --> Royaume-Uni, États-Unis d'Amérique, Italie
+    //
+    // Exemple: Stoke on Trent, Staffordshire, Angleterre, Royaume-Uni
+    // Exemple: Clark, Nevada, États-Unis d'Amérique
+    // Exemple: Agrigento, Agrigento, Sicile, Italie
+    // Exemple: Campobello di Licata, Agrigento, Sicile, Italie
+    //
+    // Note: Il faut procéder de la fin vers le début puis le pays est a priori TOUJOURS mentionné
+
+    function parsePlaceOriginal(aPlace) {
+
+      // Sépare les quatre composantes et tente de reconnaître la région et/ou le pays
+      //
+      let placeArray = aPlace.split(",")
+      for (let i = 0; i < placeArray.length; i++) {
+        placeArray[i] = placeArray[i].trim()
+      }
+      switch (placeArray.length) {
+        case 0: {
+          return {
+            'city': "UNK",
+            'county': "UNK",
+            'region': "UNK",
+            'country': "UNK"
+          }
+        }
+
+        case 1: {
+          let theCountry = isItACountry(placeArray[0])
+          if (theCountry == "") {
+            const { 'retrievedRegion': theRegion, 'retrievedCountry': theCountry } = isItARegion(placeArray[1])
+            if (theRegion != "") {
+              return {
+                'city': "UNK",          // City is unknown
+                'county': "UNK",        // County is unknown
+                'region': theRegion,    // Region is confirmed
+                'country': theCountry   // Country is confirmed
+              }
+            }
+            return {
+              'city': placeArray[0],  // Best guess
+              'county': "UNK",        // County is unknown
+              'region': "UNK",        // Region is unknown
+              'country': "UNK"        // Country is unknown
+            }
+          }
+          return {
+            'city': "UNK",
+            'county': "UNK",
+            'region': "UNK",
+            'country': placeArray[0]  // Country is confirmed
+          }
+        }
+
+        case 2: {
+          const { 'retrievedRegion': theRegion, 'retrievedCountry': theCountry } = isItARegion(placeArray[1])
+          if (theRegion != "") {
+            return {
+              'city': placeArray[0],  // Best guess
+              'county': "UNK",        //
+              'region': theRegion,    // Region is confirmed
+              'country': theCountry   // Country is confirmed
+            }
+          }
+          let theCountry2 = isItACountry(placeArray[1])
+          if (theCountry2 != "") {
+            return {
+              'city': placeArray[0],    // Best guess
+              'county': "UNK",          // County is NOT confirmed
+              'region': "UNK",          // We know the region was not specified
+              'country': theCountry2    // We know this is the country
+            }
+          }
+          return {
+            'city': placeArray[0],      // Best guess
+            'county': placeArray[1],    // Best guess
+            'region': "UNK",            // We know the region was not specified
+            'country': "UNK"            // We know the country was not specified
+          }
+        }
+
+        case 3: {
+
+          // Si le dernier élément (i.e., placeArray[2]) est un pays, alors chercher si l'élément précédent
+          // en est une région connue
+          //
+          let theCountry3 = isItACountry(placeArray[2])  // Le dernier élément (i.e., placeArray[2]) est-il un pays ?
+          if (theCountry3 != "") {
+            const { 'retrievedRegion': theRegion, 'retrievedCountry': theCountry } = isItARegion(placeArray[1])
+            if (theRegion != "") {
+              return {
+                'city': placeArray[0],    // City is NOT confirmed (best guess)
+                'county': placeArray[1],  // County is NOT confirmed (best guess)
+                'region': theRegion,      // Region is confirmed
+                'country': theCountry3    // Country is confirmed
+              }
+            }
+            return {
+              'city': placeArray[0],    // City is NOT confirmed
+              'county': placeArray[1],  // County is NOT confirmed
+              'region': "UNK",          // Region is NOT confirmed
+              'country': theCountry3    // Country is confirmed
+            }
+          }
+
+          // Non, placeArray[2] n'est pas un pays mais peut-être est-ce une région
+          // connue d'un pays dans la base de données?
+          //
+          const { 'retrievedRegion': theRegion, 'retrievedCountry': theCountry } = isItARegion(placeArray[2])
+          if (theCountry != "") {
+
+            // Oui, alors la ville et la province ne sont pas confirmés
+            //
+            return {
+              'city': placeArray[0],    // City is NOT confirmed
+              'county': placeArray[1],  // County is NOT confirmed
+              'region': theRegion,  // Region is confirmed
+              'country': theCountry     // Country is confirmed
+            }
+          }
+
+          // Non, alors la région et le pays ne sont pas confirmés
+          //
+          return {
+            'city': placeArray[0],    // City is NOT confirmed
+            'county': placeArray[1],  // County is NOT confirmed
+            'region': "UNK",          // Country is NOT confirmed
+            'country': "UNK"          // Country is NOT confirmed
+          }
+        }
+
+        case 4: {
+          const { 'retrievedRegion': theRegion, 'retrievedCountry': theCountry } = isItARegion(placeArray[2])
+          if (theRegion == "") {
+            let theCountry = isItACountry(placeArray[3])
+            if (theCountry == "") {
+              return {
+                'city': placeArray[0],    // Best guess
+                'county': placeArray[1],  // Best guess
+                'region': "UNK",          // Region is NOT confirmed
+                'country': "UNK"          // Country is NOT confirmed 
+              }
+            }
+            return {
+              'city': placeArray[0],    // Best guess
+              'county': placeArray[1],  // Best guess
+              'region': "UNK",          // Region is NOT confirmed
+              'country': placeArray[3]  // Country is confirmed 
+            }
+          }
+          return {
+            'city': placeArray[0],
+            'county': placeArray[1],
+            'region': theRegion,
+            'country': theCountry
+          }
+        }
+      }
+    }
+
+    // *****
+    // **
+    // **  Populates a tempIndividual variable using as much information as possible
+    // **  from the line imported from Excel (# is index) for a give event
+    // **
+    // *****
+
+    // someOne is mappedData[index] = a line imported from Excel
+    // tempIndividual is an optimized version of someOne !!
+
+    function makeTempIndividual(someOne, index) {
+
+      tempIndividual = {        // the Event is identified and fields (mostly "anEvent."") are populated accordingly
+        indexInTable: index,
+        score: someOne.score,
+        arkId: someOne.arkId,
+        sourceMediaType: someOne.sourceMediaType,
+        batchNumber: someOne.batchNumber,
+        roleInRecord: someOne.roleInRecord,
+        relationshipToHead: someOne.relationshipToHead,
+        name: {
+          'fullName': someOne.fullName,
+          'givenNameArray': [],
+          'surname': ""
+        },
+        sex: "",
+        birthLikeDate: someOne.birth.dateOriginal,  // Ces deux informations permettront de
+        birthLikePlace: someOne.birth.placeText,    // crééer un birthEvent pour cet individu (A VOIR...)
+        anEvent: {
+          'eventType': "",
+          'dateOriginal': "",
+          'exactDateFormal': { day: "", month: "", year: "" },
+          'place': {
+            'placeOriginal': "",
+            'city': "",
+            'county': "",
+            'region': "",
+            'country': ""
+          },
+          'toFather': null,       // Index de l'enregistrement du père (quand il aura été identifié)
+          'toMother': null,       // Index de l'enregistrement de la mère (quand elle aura été identifiée)
+          'toSpouse': null,       // Index de l'enregistrement de l'époux/épouse (quand il/elle aura été identifié/e)
+          'toStepFather': null,   // Index de l'enregistrement du beau-père (quand il aura été identifié)
+          'toStepMother': null,   // Index de l'enregistrement de la belle-mère (quand elle aura été identifiée)
+          'father': {             // Le nom du père est quand enregistré ici
+            'fullName': "",
+            'givenNameArray': [],
+            'surname': ""
+          },
+          'mother': {             // Le nom de la mère est quand enregistré ici
+            'fullName': "",
+            'givenNameArray': [],
+            'surname': ""
+          },
+          'spouse': {             // Le nom de l'époux/épouse est quand enregistré ici
+            'fullName': "",
+            'givenNameArray': [],
+            'surname': "",
+            'sex': ""
+          },
+          'stepFather': {         // Le nom du beau-père est quand enregistré ici
+            'fullName': "",
+            'givenNameArray': [],
+            'surname': ""
+          },
+          'stepMother': {         // Le nom de la belle-mère est quand enregistré ici
+            'fullName': "",
+            'givenNameArray': [],
+            'surname': ""
+          }
+        }
+      }
+
+      // Get the type, place and date of the event and complete the global
+      // variable tempIndividual.anEvent.
+
+      const {
+        'event': eventType,
+        'dateOriginal': eventDateOriginal,
+        'theDay': eventDay, 'theMonth': eventMonth, 'theYear': eventYear,
+        'thePlace': eventPlace } = whatTypeOfEvent(someOne)
+      if (eventType == unknownEvent) {
+        alert("makeTempIndividual(): Ligne #" + index + ": the event could not be identified.")
+        return -1
+      }
+      tempIndividual.anEvent.eventType = eventType
+      tempIndividual.anEvent.dateOriginal = eventDateOriginal   // *** Undefined ?
+      tempIndividual.anEvent.exactDateFormal.day = eventDay     // *** tempIndividual.dateOriginal ??
+      tempIndividual.anEvent.exactDateFormal.month = eventMonth // *** tempIndividual.eventType ??
+      tempIndividual.anEvent.exactDateFormal.year = eventYear
+
+      // Décoder le champ eventPlace pour avoir la ville, le département, la région et le pays
+      //
+      tempIndividual.anEvent.place.placeOriginal = eventPlace
+      const {
+        'city': eventCity,
+        'county': eventCounty,
+        'region': eventRegion,
+        'country': eventCountry } = parsePlaceOriginal(eventPlace)
+      tempIndividual.anEvent.place.city = eventCity
+      tempIndividual.anEvent.place.county = eventCounty
+      tempIndividual.anEvent.place.region = eventRegion
+      tempIndividual.anEvent.place.country = eventCountry
+
+      // Si une des 4 valeurs est "UNK", afficher la boîte de dialogue avec un
+      // message adapté à chaque cas de figure
+      //
+      if ((eventCity == "UNK") || (eventCounty == "UNK") || (eventRegion == "UNK") || (eventCountry == "UNK")) {
+        checkPlaceName(eventPlace, eventCity, eventCounty, eventRegion, eventCountry)
+
+        // ** A TERMINER **
+      }
+
+      // Séparer le nom de famille et les prénoms de l'individu (si ce n'est pas le nom
+      // recherché, indexOfTheName vaudra -1), puis celui du père, de la mère et de l'époux/épouse
+      //
+      // Récupère (si non vides) les noms du père, de la mère et de l'époux/épouse
+      //
+      console.log('someOne.name.fullName -- ligne 1343')
+      if (someOne.name.fullName != "") {
+        var aName = someOne.name.fullName.toLowerCase()
+        var indexOfTheName = aName.lastIndexOf(theFamilyName.toLowerCase())
+        const { sN: pSurname, gN: pGivenNameArray } = parseFullname(someOne.name.fullName)
+        tempIndividual.name.fullName = someOne.name.fullName
+        tempIndividual.name.surname = pSurname
+        tempIndividual.name.givenNameArray = pGivenNameArray
+      }
+      //
+      console.log('someOne.father.fullName -- ligne 1353')
+      if (someOne.father.fullName != "") {
+        const { sN: fSurname, gN: fGivenNameArray } = parseFullname(someOne.father.fullName)
+        tempIndividual.anEvent.father.fullName = someOne.father.fullName
+        tempIndividual.anEvent.father.surname = fSurname
+        tempIndividual.anEvent.father.givenNameArray = fGivenNameArray
+      }
+      //
+      console.log('someOne.mother.fullName -- ligne 1361')
+      if (someOne.mother.fullName != "") {
+        const { sN: mSurname, gN: mGivenNameArray } = parseFullname(someOne.mother.fullName)
+        tempIndividual.anEvent.mother.fullName = someOne.mother.fullName
+        tempIndividual.anEvent.mother.surname = mSurname;
+        tempIndividual.anEvent.mother.givenNameArray = mGivenNameArray
+      }
+      //
+      console.log('someOne.spouse.fullName -- ligne 1369')
+      if (someOne.spouse.fullName != "") {
+        const { sN: sSurname, gN: sGivenNameArray } = parseFullname(someOne.spouse.fullName);
+        tempIndividual.anEvent.spouse.fullName = someOne.spouse.fullName
+        tempIndividual.anEvent.spouse.surname = sSurname;
+        tempIndividual.anEvent.spouse.givenNameArray = sGivenNameArray
+      }
+      //
+      // Récupère (si non vides) les noms du beau-père et de la belle-mère
+      //
+      console.log('someOne.otherFullNames -- ligne 1379')
+      if (someOne.otherFullNames != "") {
+        let stepNamesArray = someOne.otherFullNames.split(";")
+        if (stepNamesArray.length > 2) {
+          alert("Too many otherFullNames... I cannot address this issue!\n" + someOne.otherFullNames)
+          return -1
+        }
+        // The first otherFullNames is usually the stepfather's name (if so, the family may be missing or
+        // be the same family name as the groom or the bride )
+        //
+        const { sN: sfSurname, gN: sfGivenNameArray } = parseFullname(stepNamesArray[0]);
+        tempIndividual.anEvent.stepFather.fullName = stepNamesArray[0]
+        tempIndividual.anEvent.stepFather.surname = sfSurname;
+        tempIndividual.anEvent.stepFather.givenNameArray = sfGivenNameArray
+        //
+        const { sN: smSurname, gN: smGivenNameArray } = parseFullname(stepNamesArray[1]);
+        tempIndividual.anEvent.stepMother.fullName = stepNamesArray[1]
+        tempIndividual.anEvent.stepMother.surname = smSurname;
+        tempIndividual.anEvent.stepMother.givenNameArray = smGivenNameArray
+      }
+
+      console.log("\nA partir de là, il n'y a plus d'appel de 'parseFullname' -- ligne 1400\n")
+
+      // Vérifie que le sexe est "Male", "Female" ou "Unknown", sinon "ND" (Not Determined)
+      //
+      // *** https://gender-api.com/fr ***
+      // *** https://gender-guesser.com/gender-name/ ***
+      // *** https://gendernamefinder.com/ ***
+      //
+      // *** https://genderize.io/?gclid=Cj0KCQjwk5ibBhDqARIsACzmgLS4gs0N8QUe5i-lN_UW4nTD2Iwz7xXF3-fXt3zoQjL_cOexlRyhNfgaAhx6EALw_wcB ***
+      //
+      // One simple algorithm: a female first name is likely to end with 'a', 'e', 'i' or 'y'
+
+      let aSex = someOne.sex
+      //  "name": "peter",  "gender": "male", "probability": 0.99, "count": 165452
+      //detect(tempIndividual.name.givenNameArray[0]).then(function (genderDetected) { })
+
+      if (sexMaleList.indexOf(aSex) != -1) {
+        tempIndividual.sex = sexMaleList[0]     // Always translate into English
+      }
+      else {
+        if (sexFemaleList.indexOf(aSex) != -1) {
+          tempIndividual.sex = sexFemaleList[0] // Always translate into English
+        }
+        else {
+          tempIndividual.sex = "ND"    // *** A FAIRE, essayer de déterminer le sexe par le premier prénom
+          let foundGender = "ND"
+          let foundNameIndex = 0
+          let foundName = ""
+
+          // const givenNameIndex = namesBase.findIndex(element => element == notFoundName)
+
+          for (i = 0; i < tempIndividual.name.givenNameArray.length; i++) {
+            foundNameIndex = 0
+            foundName = tempIndividual.name.givenNameArray[i]
+            for (j = 0; j < namesBase.length; j++) {
+              if (foundName == namesBase[j].name) {
+                foundNameIndex = j
+                foundGender = namesBase[j].sex
+                break
+              }
+            }
+            if (foundNameIndex == 0) {
+              alert("makeTempIndividual(): " + foundName + " (line #" + index + " was not found in the database...")
+              break
+            }
+          }
+
+          if (foundGender == "ND") {
+            alert("makeTempIndividual(): None of the first names in line #" + index + " were found in my database...")
+          } else {
+            if (tempIndividual.sex == 'ND') {
+              tempIndividual.sex = foundGender
+            }
+            else {
+              if (foundGender != tempIndividual.sex) {
+                alert("makeTempIndividual(): A first name indicates a diffent gender than specified in line #" + index + "!")
+              }
+            }
+          }
+        }
+      }
+
+      // if (!(sexMaleList.includes(aSex))
+      //  && (!(sexFemaleList.includes(aSex))) && (!(sexUNKList.includes(aSex)))) { aSex = "ND" }
+      // tempIndividual.sex[0].value=aSex              // *** Pour 'tempIndividual', pas besoin d'Array normalement
+
+      // Everything went well!
+      //
+      return 0
+    } // End of function makeTempIndividual
+
+  </script>
+</body>
+
+</html>

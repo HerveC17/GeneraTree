@@ -5,6 +5,21 @@ import './assets/main.css'
 import 'bootstrap/dist/css/bootstrap.css'
 import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js"
 
-createApp(GeneraTree).use(bootstrap).mount('#app')
+/******
+ * 
+ *   Variables globales
+ * 
+ */
 
-console.log("Si cela apparaît, je n'ai pas réussi à empêché la soumission par défaut du formulaire")
+/* Données chargées depuis les fichiers Excel indiqués par l'utilisateur                        */
+
+export var mappedData = new Array()    // Liste des événements importés depuis FamilySearch
+export var namesBase = new Array()     // Liste des prénoms (italiens)
+export var placesArray = new Array()   // Liste des villes (de Sicile pour l'instant)
+
+/* Variables temporaires pour les différents individus possiblement trouvés dans FamilySearch
+
+var tempIndividual, tempFather, tempMother, tempSpouse, tempStepFather, tempStepMother = ""
+*/
+
+createApp(GeneraTree).use(bootstrap).mount('#app')

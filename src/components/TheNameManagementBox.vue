@@ -1,3 +1,4 @@
+<template>
 <dialog id="namesDialog" class="roundbox boxshadow"
     style="width: 400px; height: 250px; border: solid 2px black; padding:0">
     <form method="dialog">
@@ -13,7 +14,7 @@
         </p>
         <!--- No label beside the editable text -->
         <!--- innerText will be initialized before showing the modal box-->
-        <input type="text" class="nameFound" id="name"></label>
+        <input type="text" class="nameFound" id="name">
         <p class="smalltext" id="fullnameField">
           The full name field is:
         </p>
@@ -38,3 +39,4 @@
       </div>
     </form>
   </dialog>
+</template>
