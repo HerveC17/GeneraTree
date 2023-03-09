@@ -2,9 +2,13 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import GeneraTree from './GeneraTree.vue'
 
+//import bootstrap from 'bootstrap'                 --> Ça ne fonctionne pas !!
+
+// Autre manière de faire, mais je ne sais pas comment l'utiliser avec .mount(#app)
+//
 //import './assets/main.css'
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap/dist/js/bootstrap.bundle.js'
+//import 'bootstrap/dist/css/bootstrap.css'
+//import 'bootstrap/dist/js/bootstrap.bundle.js'
 
 /******
  * 
@@ -20,13 +24,14 @@ import 'bootstrap/dist/js/bootstrap.bundle.js'
 
 /* Arbre généalogique (DAG). Voir "initializeTree()"                                            */
 
-export var geneaDAG = new Array()
+// export var geneaDAG = new Array()
+
 export const foreFatherIndex = 0
 export const foreMotherIndex = 1
  
 /* Variables temporaires pour les différents individus possiblement trouvés dans FamilySearch   */
 
-export var tempIndividual, tempFather, tempMother, tempSpouse, tempStepFather, tempStepMother = ""
+//export var tempIndividual, tempFather, tempMother, tempSpouse, tempStepFather, tempStepMother = ""
 
 /*****
  * 
@@ -34,8 +39,7 @@ export var tempIndividual, tempFather, tempMother, tempSpouse, tempStepFather, t
  * 
  *****/
 
-const pinia=createPinia()
-const app=createApp(GeneraTree)
-app.use(pinia)
-//app.use(bootstrap)
-app.mount('#app')
+const pinia = createPinia()
+createApp(GeneraTree).use(pinia).mount('#app')
+//app.use(pinia)
+//app.mount('#app')

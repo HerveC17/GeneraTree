@@ -1,9 +1,8 @@
 import { useLoadFileStore } from '/Users/hervecaci/GeneaTree/src/Store/LoadFileStore'
-  const loadFileStore = useLoadFileStore()
-import { geneaDAG,
-  foreFatherIndex, foreMotherIndex } from '/Users/hervecaci/GeneaTree/src/main.js'
-
-
+const loadFileStore = useLoadFileStore()
+import { useDAGStore } from '/Users/hervecaci/GeneaTree/src/Store/DAGStore'
+const DAGStore = useDAGStore()
+import { foreFatherIndex, foreMotherIndex } from '/Users/hervecaci/GeneaTree/src/main.js'
 
 //import { theFamilyNameCapitalized } from '/Users/hervecaci/GeneaTree/src/components/GeneraTreeWelcome.vue'
 
@@ -13,31 +12,31 @@ import { geneaDAG,
 // *
 // *****
 
-export function createEmptyTree() {
+export function pushAnEmptyTree() {
   // Create a first empty node and populate it with defaults characteristics of the forefather
   //
-  createEmptyNode()
-  geneaDAG[foreFatherIndex].name[0].indexInTable = -1
-  geneaDAG[foreFatherIndex].name[0].fullName = 'Unk ' + loadFileStore.theFamilyNameCapitalized + ' (forefather)'
-  geneaDAG[foreFatherIndex].name[0].givenNameArray[0] = 'Unk'
-  geneaDAG[foreFatherIndex].name[0].surname = loadFileStore.theFamilyNameCapitalized + ' (forefather)'
-  geneaDAG[foreFatherIndex].sex[0].indexInTable = -1
-  geneaDAG[foreFatherIndex].sex[0].value = 'Male'
+  pushAnEmptyNode()
+  DAGStore.geneaDAG[foreFatherIndex].name[0].indexInTable = -1
+  DAGStore.geneaDAG[foreFatherIndex].name[0].fullName = 'Unk ' + loadFileStore.theFamilyNameCapitalized + ' (forefather)'
+  DAGStore.geneaDAG[foreFatherIndex].name[0].givenNameArray[0] = 'Unk'
+  DAGStore.geneaDAG[foreFatherIndex].name[0].surname = loadFileStore.theFamilyNameCapitalized + ' (forefather)'
+  DAGStore.geneaDAG[foreFatherIndex].sex[0].indexInTable = -1
+  DAGStore.geneaDAG[foreFatherIndex].sex[0].value = 'Male'
 
   // Create a second empty node and Populate it with defaults characteristics of the foremother
   //
-  createEmptyNode()
-  geneaDAG[foreMotherIndex].name[0].indexInTable = -1
-  geneaDAG[foreMotherIndex].name[0].fullName = 'Unk Unk (foremother)'
-  geneaDAG[foreMotherIndex].name[0].givenNameArray[0] = 'Unk'
-  geneaDAG[foreMotherIndex].name[0].surname = 'Unk (foremother)'
-  geneaDAG[foreMotherIndex].sex[0].indexInTable = -1
-  geneaDAG[foreMotherIndex].sex[0].value = 'Female'
+  pushAnEmptyNode()
+  DAGStore.geneaDAG[foreMotherIndex].name[0].indexInTable = -1
+  DAGStore.geneaDAG[foreMotherIndex].name[0].fullName = 'Unk Unk (foremother)'
+  DAGStore.geneaDAG[foreMotherIndex].name[0].givenNameArray[0] = 'Unk'
+  DAGStore.geneaDAG[foreMotherIndex].name[0].surname = 'Unk (foremother)'
+  DAGStore.geneaDAG[foreMotherIndex].sex[0].indexInTable = -1
+  DAGStore.geneaDAG[foreMotherIndex].sex[0].value = 'Female'
 
   // Link those two nodes together
   //
-  geneaDAG[foreFatherIndex].toSpouseList[0] = foreMotherIndex
-  geneaDAG[foreMotherIndex].toSpouseList[0] = foreFatherIndex
+  DAGStore.geneaDAG[foreFatherIndex].toSpouseList[0] = foreMotherIndex
+  DAGStore.geneaDAG[foreMotherIndex].toSpouseList[0] = foreFatherIndex
 }
 
 /*******
@@ -52,7 +51,7 @@ export function createEmptyTree() {
 // Chaque variable est une Array car il peut y avoir plusieurs lignes dans la feuille Excel
 // pour un même événement (plusieurs mariages) ou pour une même personne (naissance, décès)
 
-export function createEmptyNode() {
+function pushAnEmptyNode() {
   let dummyNode = {
     score: [{ indexInTable: null, value: '' }],
     arkId: [{ indexInTable: null, value: '' }],
@@ -78,10 +77,10 @@ export function createEmptyNode() {
         spouse: { fullName: '', givenNameArray: [], surname: '' }
       }
     ],
-    toFather: null, // Index dans geneaDAG: un seul père, normalement
-    toMother: null, // Index dans geneaDAG: une seule mère, normalement
-    toSpouseList: [], // Index dans geneaDAG: plusieurs époux/épouses possibles
-    toChildList: [] // Index dans geneaDAG: plusieurs enfants possibles
+    toFather: null,     // Index dans geneaDAG: un seul père, normalement
+    toMother: null,     // Index dans geneaDAG: une seule mère, normalement
+    toSpouseList: [],   // Index dans geneaDAG: plusieurs époux/épouses possibles
+    toChildList: []     // Index dans geneaDAG: plusieurs enfants possibles
   }
-  geneaDAG.push(dummyNode)
+  DAGStore.geneaDAG.push(dummyNode)
 }
