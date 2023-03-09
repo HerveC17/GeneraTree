@@ -1,9 +1,10 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import GeneraTree from './GeneraTree.vue'
 
-import './assets/main.css'
+//import './assets/main.css'
 import 'bootstrap/dist/css/bootstrap.css'
-import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js"
+import 'bootstrap/dist/js/bootstrap.bundle.js'
 
 /******
  * 
@@ -13,20 +14,28 @@ import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js"
 
 /* Données chargées depuis les fichiers Excel indiqués par l'utilisateur                        */
 
-export var mappedData = new Array()    // Liste des événements importés depuis FamilySearch
-export var namesBase = new Array()     // Liste des prénoms (italiens)
-export var placesArray = new Array()   // Liste des villes (de Sicile pour l'instant)
+//export var mappedData = new Array()    // Liste des événements importés depuis FamilySearch
+//export var namesBase = new Array()     // Liste des prénoms (italiens)
+//export var placesArray = new Array()   // Liste des villes (de Sicile pour l'instant)
 
 /* Arbre généalogique (DAG). Voir "initializeTree()"                                            */
 
 export var geneaDAG = new Array()
 export const foreFatherIndex = 0
 export const foreMotherIndex = 1
-export var theFamilyName = ""               // Nom récupéré dans le premier formulaire
-export var theFamilyNameCapitalized = ""    // Nom avec majuscule en lettre capitale puis minuscules
-    
+ 
 /* Variables temporaires pour les différents individus possiblement trouvés dans FamilySearch   */
 
 export var tempIndividual, tempFather, tempMother, tempSpouse, tempStepFather, tempStepMother = ""
 
-createApp(GeneraTree).use(bootstrap).mount('#app')
+/*****
+ * 
+ *  Démarrage du programme ICI
+ * 
+ *****/
+
+const pinia=createPinia()
+const app=createApp(GeneraTree)
+app.use(pinia)
+//app.use(bootstrap)
+app.mount('#app')

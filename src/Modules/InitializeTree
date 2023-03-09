@@ -1,6 +1,11 @@
+import { useLoadFileStore } from '/Users/hervecaci/GeneaTree/src/Store/LoadFileStore'
+  const loadFileStore = useLoadFileStore()
 import { geneaDAG,
-  foreFatherIndex, foreMotherIndex,
-  theFamilyNameCapitalized } from '/Users/hervecaci/GeneaTree/src/main.js'
+  foreFatherIndex, foreMotherIndex } from '/Users/hervecaci/GeneaTree/src/main.js'
+
+
+
+//import { theFamilyNameCapitalized } from '/Users/hervecaci/GeneaTree/src/components/GeneraTreeWelcome.vue'
 
 // *****
 // *
@@ -13,9 +18,9 @@ export function createEmptyTree() {
   //
   createEmptyNode()
   geneaDAG[foreFatherIndex].name[0].indexInTable = -1
-  geneaDAG[foreFatherIndex].name[0].fullName = 'Unk ' + theFamilyNameCapitalized + ' (forefather)'
+  geneaDAG[foreFatherIndex].name[0].fullName = 'Unk ' + loadFileStore.theFamilyNameCapitalized + ' (forefather)'
   geneaDAG[foreFatherIndex].name[0].givenNameArray[0] = 'Unk'
-  geneaDAG[foreFatherIndex].name[0].surname = theFamilyNameCapitalized + ' (forefather)'
+  geneaDAG[foreFatherIndex].name[0].surname = loadFileStore.theFamilyNameCapitalized + ' (forefather)'
   geneaDAG[foreFatherIndex].sex[0].indexInTable = -1
   geneaDAG[foreFatherIndex].sex[0].value = 'Male'
 

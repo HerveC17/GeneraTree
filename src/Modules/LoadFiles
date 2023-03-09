@@ -1,7 +1,10 @@
-import { mappedData, namesBase, placesArray } from '/Users/hervecaci/GeneaTree/src/main.js'
+//import { mappedData, namesBase, placesArray } from '/Users/hervecaci/GeneaTree/src/main.js'
+
+import { useLoadFileStore } from '/Users/hervecaci/GeneaTree/src/Store/LoadFileStore'
+const loadFileStore = useLoadFileStore()
 
 import * as XLSX from 'xlsx/xlsx.mjs'
-import * as fs from 'fs' // load 'fs' for readFile and writeFile support
+import * as fs from 'fs'              // load 'fs' for readFile and writeFile support
 XLSX.set_fs(fs)
 
 // *****
@@ -38,7 +41,7 @@ function readFileAsync(file) {
       const roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[workbook.SheetNames[0]])
       if (roa.length > 0) {
         for (let i = 0; i < roa.length; i++) {
-          mappedData.push(mapNode(roa[i], i))
+          loadFileStore.mappedData.push(mapNode(roa[i], i))  // Pinia: ajout de loadFileStore
         }
       }
 
@@ -66,7 +69,7 @@ function readNamesAsync(file) {
       const roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[workbook.SheetNames[0]])
       if (roa.length > 0) {
         for (let i = 0; i < roa.length; i++) {
-          namesBase.push(mapNames(roa[i]))
+          loadFileStore.namesBase.push(mapNames(roa[i]))  // Pinia: ajout de loadFileStore
         }
       }
       resolve(true) // resolve(event.target.result)
@@ -87,7 +90,7 @@ function readCitiesAsync(file) {
       const roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[workbook.SheetNames[0]])
       if (roa.length > 0) {
         for (let i = 0; i < roa.length; i++) {
-          placesArray.push(mapPlaces(roa[i]))
+          loadFileStore.placesArray.push(mapPlaces(roa[i]))  // Pinia: ajout de loadFileStore
         }
       }
       resolve(true) // resolve(event.target.result)

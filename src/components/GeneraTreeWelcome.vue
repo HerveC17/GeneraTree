@@ -1,3 +1,8 @@
+<script setup>
+  import { useLoadFileStore } from '/Users/hervecaci/GeneaTree/src/Store/LoadFileStore'
+  const loadFileStore = useLoadFileStore()
+</script>
+
 <template>
   <form @submit.prevent="onSubmitForm" v-if="formValues.showForm">
     <!--<button v-on:click="formValues.showForm = !formValues.showForm">Afficher le formulaire</button> -->
@@ -39,8 +44,6 @@
 <script>
 import { loadFiles } from '/Users/hervecaci/GeneaTree/src/Modules/LoadFiles'
 import { createEmptyNode } from '/Users/hervecaci/GeneaTree/src/Modules/InitializeTree'
-import { theFamilyName, theFamilyNameCapitalized } from '/Users/hervecaci/GeneaTree/src/main.js'
-
 export default {
   data() {
     return {
@@ -51,7 +54,8 @@ export default {
         familyName: '',
         showForm: true,
         formSubmitted: false
-      }
+      },
+      theFamilyNameCapitalized:'',
     }
   },
   methods: {
@@ -61,15 +65,15 @@ export default {
       this.formValues.formSubmitted = true
 
       // Récupère le nom recherché et cache le formulaire
-      theFamilyName = this.formValues.familyName.toLowerCase()
-      ftheFamilyNameCapitalized = theFamilyName.charAt(0).toUpperCase() + theFamilyName.slice(1)
+      loadFileStore.theFamilyName = this.formValues.familyName.toLowerCase()
+      loadFileStore.theFamilyNameCapitalized = loadFileStore.theFamilyName.charAt(0).toUpperCase() + loadFileStore.theFamilyName.slice(1)
       this.formValues.showForm = false
-      
+
       // Charge les fichiers XLSX dans les trois tableaux
-      loadFiles(this.formValues.dataFilename, this.formValues.nameFilename,this.formValues.cityFilename)
-      
+      loadFiles(this.formValues.dataFilename, this.formValues.nameFilename, this.formValues.cityFilename)
+
       // Crée un arbre généalogique avec deux ancêtres
-      createEmptyNode()                     
+      createEmptyNode()
     },
     onDataFilenameChange() {
       this.formValues.dataFilename = this.$refs.dataFilename.files[0]

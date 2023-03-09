@@ -1,6 +1,6 @@
 <script>
-/* import NameManagerBox from './components/TheNameManagementBox.vue' */
 import GeneraTreeWelcome from './components/GeneraTreeWelcome.vue'
+
 export default {
   name: "app",
   components: {
@@ -15,7 +15,7 @@ export default {
       <h1 class="green"> GeneraTree: le générateur d'arbre généalogique</h1>
       <h3>par Hervé Caci - version 0.0.1 - Mars 2023</h3>
     </header>
-    <GeneraTreeWelcome/>
+    <GeneraTreeWelcome />
   </div>
 </template>
 
