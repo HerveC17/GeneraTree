@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import GeneraTree from './GeneraTree.vue'
+import GeneraTree from './GeneraTree.vue'       // Equivalent de App et de './App.vue'
+import { useXLSXfilesStore } from'./Store/XLSXfiles.js'
 
 //import bootstrap from 'bootstrap'
 
@@ -40,6 +41,8 @@ export const foreMotherIndex = 1
  *****/
 
 const pinia = createPinia()
-createApp(GeneraTree).use(pinia).mount('#app')
-//app.use(pinia)
-//app.mount('#app')
+const app = createApp(GeneraTree)
+app.use(pinia)
+const XLSXfiles = useXLSXfilesStore()
+export { XLSXfiles }
+app.mount('#app')

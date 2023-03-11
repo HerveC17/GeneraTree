@@ -1,8 +1,63 @@
-<script setup>
-  import { pushAnEmptyTree } from './Modules/InitializeTree.vue'
-  import { loadFiles } from './Modules/LoadFiles.vue'
-  import { useXLSXfilesStore } from './Store/LoadFileStore'
-  const XLSXfiles = useXLSXfilesStore()
+<script>
+import { pushAnEmptyTree } from './components/InitializeTree.vue'
+import { loadFiles } from './components/LoadFiles.vue'
+import { XLSXfiles } from './main.js'
+//import { useXLSXfilesStore } from './Store/XLSXfiles'
+
+export default {
+  setup() {
+
+    //data () {
+    return {
+      formValues: {
+        dataFilename: '',
+        nameFilename: '',
+        cityFilename: '',
+        familyName: '',
+        showForm: true,
+        formSubmitted: false
+      }
+    }
+  },
+  methods: {
+    onSubmitForm(event) {
+      event.preventDefault()
+      event.stopPropagation()
+      this.formValues.formSubmitted = true
+
+      // Récupère le nom recherché et cache le formulaire
+
+      // avec this.XLSXfiles, j'ai:
+      //      Uncaught TypeError: Cannot set properties of undefined (setting 'theFamilyName')
+      //      at Proxy.onSubmitForm (GeneraTree.vue:81:40) -- Ligne 89
+      //
+      // avec XLSXfiles, j'ai:
+      //      Uncaught ReferenceError: XLSXfiles is not defined at Proxy.onSubmitForm
+      //      (GeneraTree.vue:85:7)  -- Ligne 89
+
+      // NB: sortie OK console.log("family Name is: " + this.formValues.familyName.toLowerCase())
+
+      XLSXfiles.theFamilyName = this.formValues.familyName.toLowerCase()
+      XLSXfiles.theFamilyNameCapitalized = XLSXfiles.theFamilyName.charAt(0).toUpperCase() + XLSXfiles.theFamilyName.slice(1)
+      this.formValues.showForm = false
+
+      // Charge les fichiers XLSX dans les trois tableaux
+      loadFiles(this.formValues.dataFilename, this.formValues.nameFilename, this.formValues.cityFilename)
+
+      // Crée un arbre généalogique avec deux ancêtres
+      pushAnEmptyTree()
+    },
+    onDataFilenameChange() {
+      this.formValues.dataFilename = this.$refs.dataFilename.files[0]
+    },
+    onNameFilenameChange() {
+      this.formValues.nameFilename = this.$refs.nameFilename.files[0]
+    },
+    onCityFilenameChange() {
+      this.formValues.cityFilename = this.$refs.cityFilename.files[0]
+    }
+  }
+}
 </script>
 
 <template>
@@ -13,7 +68,6 @@
     </header>
     <div class="askForFilesAndName">
       <form @submit.prevent="onSubmitForm" v-if="formValues.showForm">
-        <!--<button v-on:click="formValues.showForm = !formValues.showForm">Afficher le formulaire</button> -->
         <div class="row g-3 needs-validation" fileOfEvents>
           <div class="col-md-9">
             <label for="dataFilename" class="form-label">Fichier des événements</label>
@@ -53,58 +107,3 @@
     </div>
   </div>
 </template>
-
-<script>
-export default {
-  data() {
-    return {
-      formValues: {
-        dataFilename: '',
-        nameFilename: '',
-        cityFilename: '',
-        familyName: '',
-        showForm: true,
-        formSubmitted: false
-      }
-    }
-  },
-  methods: {
-    onSubmitForm(event) {
-      event.preventDefault()
-      event.stopPropagation()
-      this.formValues.formSubmitted = true
-
-      // Récupère le nom recherché et cache le formulaire
-
-      // avec this.loadFileStore, j'ai:
-      //      Uncaught TypeError: Cannot set properties of undefined (setting 'theFamilyName')
-      //      at Proxy.onSubmitForm (GeneraTree.vue:81:40) -- Ligne 87
-      //
-      // avec loadFileStore, j'ai:
-      //      Uncaught ReferenceError: loadFileStore is not defined at Proxy.onSubmitForm
-      //      (GeneraTree.vue:85:7)  -- Ligne 87
-
-      // NB: sortie OK console.log("family Name is: " + this.formValues.familyName.toLowerCase())
-
-      XLSXfiles.theFamilyName = this.formValues.familyName.toLowerCase()
-      XLSXfiles.theFamilyNameCapitalized = XLSXfiles.theFamilyName.charAt(0).toUpperCase() + XLSXfiles.theFamilyName.slice(1)
-      this.formValues.showForm = false
-
-      // Charge les fichiers XLSX dans les trois tableaux
-      loadFiles(this.formValues.dataFilename, this.formValues.nameFilename, this.formValues.cityFilename)
-
-      // Crée un arbre généalogique avec deux ancêtres
-      pushAnEmptyTree()
-    },
-    onDataFilenameChange() {
-      this.formValues.dataFilename = this.$refs.dataFilename.files[0]
-    },
-    onNameFilenameChange() {
-      this.formValues.nameFilename = this.$refs.nameFilename.files[0]
-    },
-    onCityFilenameChange() {
-      this.formValues.cityFilename = this.$refs.cityFilename.files[0]
-    }
-  }
-}
-</script>

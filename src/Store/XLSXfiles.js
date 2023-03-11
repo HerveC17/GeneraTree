@@ -1,6 +1,6 @@
 /*****
  * 
- * LoadFileStore: Définit un store
+ * XLSXfiles: Définit un store
  * 
  * Ces variables sont initialisées dans "GeneraTreeWelcome.vue" et les données
  * récupérées depuis les fichiers XLSX dans les trois tableaux par le module "LoadFiles"

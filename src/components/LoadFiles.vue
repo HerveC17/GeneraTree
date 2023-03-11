@@ -1,5 +1,5 @@
 <script setup>
-import { useXLSXfilesStore } from '../Store/LoadFileStore'
+import { useXLSXfilesStore } from '../Store/XLSXfiles'
 const XLSXfiles=useXLSXfilesStore()
 </script>
 

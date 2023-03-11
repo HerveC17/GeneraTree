@@ -1,6 +1,6 @@
 <script setup>
-import { useXLSXfilesStore } from '../Store/LoadFileStore'
-import { useDAGStore } from '../Store/DAGStore'
+import { useXLSXfilesStore } from '../Store/XLSXfiles'
+import { useDAGStore } from '../Store/DAG'
 const XLSXfiles = useXLSXfilesStore()
 const DAGStore = useDAGStore()
 </script>
