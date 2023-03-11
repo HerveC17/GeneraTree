@@ -1,18 +1,11 @@
-<script setup>
-import { useXLSXfilesStore } from '../Store/XLSXfiles'
-import { useDAGStore } from '../Store/DAG'
-const XLSXfiles = useXLSXfilesStore()
-const DAGStore = useDAGStore()
-</script>
-
 <script>
+import { XLSXfiles } from '../main.js'
+import { DAGStore } from '../main.js'
 import { foreFatherIndex, foreMotherIndex } from '../main.js'
-
-//import { theFamilyNameCapitalized } from '/Users/hervecaci/GeneaTree/src/components/GeneraTreeWelcome.vue'
 
 // *****
 // *
-// *  Initialise l'arbre avec uniquement l'ancêtre mâle et son épouse
+// *  Initialise l'arbre avec uniquement l'ancêtre mâle théorique et son épouse
 // *
 // *****
 

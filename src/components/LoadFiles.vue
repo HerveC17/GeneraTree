@@ -1,13 +1,5 @@
-<script setup>
-import { useXLSXfilesStore } from '../Store/XLSXfiles'
-const XLSXfiles=useXLSXfilesStore()
-</script>
-
-<!--
-    Lit simplement les fichiers XLSX successivement et de manière asynchrone.
--->
-
 <script>
+import { XLSXfiles } from '../main.js'
 import * as XLSX from 'xlsx/xlsx.mjs'
 import * as fs from 'fs' // load 'fs' for readFile and writeFile support
 XLSX.set_fs(fs)

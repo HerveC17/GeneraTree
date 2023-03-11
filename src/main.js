@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import GeneraTree from './GeneraTree.vue'       // Equivalent de App et de './App.vue'
 import { useXLSXfilesStore } from'./Store/XLSXfiles.js'
+import { useDAGStore } from './Store/DAG.js'
 
 //import bootstrap from 'bootstrap'
 
@@ -10,6 +11,7 @@ import { useXLSXfilesStore } from'./Store/XLSXfiles.js'
 import './assets/main.css'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap/dist/js/bootstrap.bundle.js'
+//import { useDAGStore } from './Store/DAG.js'
 
 /******
  * 
@@ -43,6 +45,8 @@ export const foreMotherIndex = 1
 const pinia = createPinia()
 const app = createApp(GeneraTree)
 app.use(pinia)
-const XLSXfiles = useXLSXfilesStore()
-export { XLSXfiles }
+const XLSXfiles = useXLSXfilesStore()   // Ainsi, le store est créé après que createPinia() a été lancé
+export { XLSXfiles }                    // Ainsi, le store XLSXfiles est accessible depuis tous les components
+const DAGStore = useDAGStore()
+export { DAGStore }
 app.mount('#app')

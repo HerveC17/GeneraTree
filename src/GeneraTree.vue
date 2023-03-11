@@ -2,7 +2,6 @@
 import { pushAnEmptyTree } from './components/InitializeTree.vue'
 import { loadFiles } from './components/LoadFiles.vue'
 import { XLSXfiles } from './main.js'
-//import { useXLSXfilesStore } from './Store/XLSXfiles'
 
 export default {
   setup() {
