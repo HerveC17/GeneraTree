@@ -1,18 +1,16 @@
-//import { mappedData, namesBase, placesArray } from '/Users/hervecaci/GeneaTree/src/main.js'
+<script setup>
+import { useXLSXfilesStore } from '../Store/LoadFileStore'
+const XLSXfiles=useXLSXfilesStore()
+</script>
 
-import { useLoadFileStore } from '/Users/hervecaci/GeneaTree/src/Store/LoadFileStore'
-const loadFileStore = useLoadFileStore()
+<!--
+    Lit simplement les fichiers XLSX successivement et de manière asynchrone.
+-->
 
+<script>
 import * as XLSX from 'xlsx/xlsx.mjs'
-import * as fs from 'fs'              // load 'fs' for readFile and writeFile support
+import * as fs from 'fs' // load 'fs' for readFile and writeFile support
 XLSX.set_fs(fs)
-
-// *****
-//
-//    Lit simplement le fichier de manière asynchrone. C'est cette fonction
-//    dont on attendra la fin pour extraire les données
-//
-// *****
 
 export async function loadFiles(dataFile, namesFile, citiesFile) {
   try {
@@ -41,7 +39,7 @@ function readFileAsync(file) {
       const roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[workbook.SheetNames[0]])
       if (roa.length > 0) {
         for (let i = 0; i < roa.length; i++) {
-          loadFileStore.mappedData.push(mapNode(roa[i], i))  // Pinia: ajout de loadFileStore
+          XLSXfiles.mappedData.push(mapNode(roa[i], i)) // Pinia: ajout de loadFileStore
         }
       }
 
@@ -69,7 +67,7 @@ function readNamesAsync(file) {
       const roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[workbook.SheetNames[0]])
       if (roa.length > 0) {
         for (let i = 0; i < roa.length; i++) {
-          loadFileStore.namesBase.push(mapNames(roa[i]))  // Pinia: ajout de loadFileStore
+          XLSXfiles.namesBase.push(mapNames(roa[i])) // Pinia: ajout de loadFileStore
         }
       }
       resolve(true) // resolve(event.target.result)
@@ -90,7 +88,7 @@ function readCitiesAsync(file) {
       const roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[workbook.SheetNames[0]])
       if (roa.length > 0) {
         for (let i = 0; i < roa.length; i++) {
-          loadFileStore.placesArray.push(mapPlaces(roa[i]))  // Pinia: ajout de loadFileStore
+          XLSXfiles.placesArray.push(mapPlaces(roa[i])) // Pinia: ajout de loadFileStore
         }
       }
       resolve(true) // resolve(event.target.result)
@@ -102,11 +100,11 @@ function readCitiesAsync(file) {
   })
 }
 
-// *****
-// *
-// * Peuple un noeud avec les données Excel de l'individu
-// *
-// *****
+/*****
+ * 
+ * Peuple un noeud avec les données Excel de l'individu
+ * 
+ *****/
 
 function mapNode(aRecord, index) {
   // Peuple le noeud
@@ -247,3 +245,4 @@ function mapPlaces(record) {
   }
   return placeRecord
 }
+</script>

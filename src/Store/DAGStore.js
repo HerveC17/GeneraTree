@@ -8,7 +8,7 @@
 
 import { defineStore } from 'pinia'
 
-export const useDAGStore = defineStore('DAGStore' /* the unique ID */, {
+export const useDAGStore = defineStore('DAG' /* the unique ID */, {
     state() {
         return {
             geneaDAG: [],           // L'arbre généalogique !!

@@ -1,8 +1,8 @@
 <script setup>
-  import { pushAnEmptyTree } from '/Users/hervecaci/GeneaTree/src/Modules/InitializeTree'
-  import { loadFiles } from '/Users/hervecaci/GeneaTree/src/Modules/LoadFiles'
-  import { useLoadFileStore } from '/Users/hervecaci/GeneaTree/src/Store/LoadFileStore'
-  const loadFileStore = useLoadFileStore()
+  import { pushAnEmptyTree } from './Modules/InitializeTree.vue'
+  import { loadFiles } from './Modules/LoadFiles.vue'
+  import { useXLSXfilesStore } from './Store/LoadFileStore'
+  const XLSXfiles = useXLSXfilesStore()
 </script>
 
 <template>
@@ -75,8 +75,19 @@ export default {
       this.formValues.formSubmitted = true
 
       // Récupère le nom recherché et cache le formulaire
-      loadFileStore.theFamilyName = this.formValues.familyName.toLowerCase()
-      loadFileStore.theFamilyNameCapitalized = loadFileStore.theFamilyName.charAt(0).toUpperCase() + loadFileStore.theFamilyName.slice(1)
+
+      // avec this.loadFileStore, j'ai:
+      //      Uncaught TypeError: Cannot set properties of undefined (setting 'theFamilyName')
+      //      at Proxy.onSubmitForm (GeneraTree.vue:81:40) -- Ligne 87
+      //
+      // avec loadFileStore, j'ai:
+      //      Uncaught ReferenceError: loadFileStore is not defined at Proxy.onSubmitForm
+      //      (GeneraTree.vue:85:7)  -- Ligne 87
+
+      // NB: sortie OK console.log("family Name is: " + this.formValues.familyName.toLowerCase())
+
+      XLSXfiles.theFamilyName = this.formValues.familyName.toLowerCase()
+      XLSXfiles.theFamilyNameCapitalized = XLSXfiles.theFamilyName.charAt(0).toUpperCase() + XLSXfiles.theFamilyName.slice(1)
       this.formValues.showForm = false
 
       // Charge les fichiers XLSX dans les trois tableaux

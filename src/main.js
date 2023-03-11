@@ -2,13 +2,13 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import GeneraTree from './GeneraTree.vue'
 
-//import bootstrap from 'bootstrap'                 --> Ça ne fonctionne pas !!
+//import bootstrap from 'bootstrap'
 
 // Autre manière de faire, mais je ne sais pas comment l'utiliser avec .mount(#app)
 //
-//import './assets/main.css'
-//import 'bootstrap/dist/css/bootstrap.css'
-//import 'bootstrap/dist/js/bootstrap.bundle.js'
+import './assets/main.css'
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap/dist/js/bootstrap.bundle.js'
 
 /******
  * 

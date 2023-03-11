@@ -9,7 +9,7 @@
 
 import { defineStore } from 'pinia'
 
-export const useLoadFileStore = defineStore('loadFileStore' /* the unique ID */, {
+export const useXLSXfilesStore = defineStore('XLSXfiles' /* the unique ID */, {
     state() {
         return {
             mappedData: [],                 // Liste des événements importés depuis FamilySearch
